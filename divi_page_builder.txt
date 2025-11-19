@@ -1,0 +1,92 @@
+Where Divi Stores Page Data?
+
+Divi does NOT store layouts in separate tables.
+Everything is stored inside the wp_posts table → post_content column.
+
+Example structure:
+===============================
+wp_posts
+ └─ post_content = Divi Shortcodes JSON + Module Attributes
+===============================
+
+
+Example raw content stored (simplified):
+===============================
+[et_pb_section]
+    [et_pb_row]
+        [et_pb_text background_color="#fff" font_size="16px"]
+            Hello World
+        [/et_pb_text]
+    [/et_pb_row]
+[/et_pb_section]
+===============================
+So Divi uses WordPress shortcode architecture.
+
+
+How Divi Shortcodes Work Internally
+Divi registers shortcode handlers in PHP like:
+======================================
+add_shortcode('et_pb_text', 'et_pb_render_text_module');
+Each shortcode corresponds to a Divi module.
+
+So when WordPress loads a page: ***********
+stored shortcode  ---> WP Shortcode Parser ---> Divi Renderer ---> HTML Output
+
+
+Example module renderer: ********************
+function et_pb_render_text_module($atts, $content) {
+    $styles = isset($atts['font_size']) ? "font-size: {$atts['font_size']}" : '';
+    return "<div class='et_pb_text' style='{$styles}'>{$content}</div>";
+}
+
+
+How Divi Builder Generates Shortcode
+When you drag a block and edit its properties in the UI, Divi runs: *******
+UI → React/JS → AJAX → WordPress REST API → Save post_content
+The data is serialized and converted into shortcode format.
+
+
+Divi also stores a JSON version in the post meta for speed:
+wp_postmeta
+ └─ meta_key: _et_pb_use_builder = on
+ └─ meta_key: _et_pb_built_with_post = true
+ └─ meta_key: _et_pb_base_layout = {JSON representation}
+This JSON stores structured layout for fast editing.
+
+
+Rendering Pipeline
+Frontend Render Flow ********************
+Database (shortcode) 
+     ↓
+WordPress do_shortcode()
+     ↓
+Divi shortcode handlers convert to HTML
+     ↓
+Final page output
+
+
+Divi uses wpautop() + its own sanitizer + CSS generator.
+
+
+Where to Write Backend Code for Shortcodes in WordPress?
+functions.php of theme ============== ✔ Temporary or testing
+Custom Plugin ======================= ✔✔ Best practice
+Divi Child Theme functions.php ============ ✔ If building only inside Divi
+
+
+Best Professional Method: Create a Plugin*********************************************
+wp-content/plugins/custom-shortcodes/
+Create file: custom-shortcodes.php:
+<?php
+/**
+ * Plugin Name: Custom Shortcodes
+ */
+
+if (!defined('ABSPATH')) exit;
+
+require_once __DIR__.'/shortcodes.php';
+
+
+
+
+

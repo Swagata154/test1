@@ -1,0 +1,8 @@
+STEP - 2
+DAYs - (1-20):
+Basic Python (start form 11-06-26 to 30-06-26)
+
+
+STEP - 2
+DAYs - (21-35):
+Advanced Python (start form 01-07-26 to 15-07-26)
